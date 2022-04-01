@@ -16,10 +16,8 @@ defmodule TiktokShop.Support.SignRequest do
   # other request
   defp prepare_params(env, credential) do
     common_params =
-      (env.body || %{})
-      |> Map.merge(Map.new(env.query))
+      Map.new(env.query)
       |> build_common_params(env, credential)
-      |> Map.merge(Map.new(env.query))
       |> Enum.to_list()
 
     %{env | query: common_params}
@@ -27,12 +25,12 @@ defmodule TiktokShop.Support.SignRequest do
 
   defp build_common_params(params, env, credential) do
     common_params =
-      %{
+      params
+      |> Map.merge(%{
         app_key: credential.app_key,
-        timestamp: "#{:os.system_time(:millisecond)}",
-        access_token: credential.access_token,
+        timestamp: "#{:os.system_time(:second)}",
         shop_id: credential.shop_id
-      }
+      })
       |> Helpers.clean_nil()
 
     params =
@@ -40,6 +38,9 @@ defmodule TiktokShop.Support.SignRequest do
       |> Helpers.clean_nil()
 
     signature = Helpers.sign(params, env.opts[:api_name], credential.app_secret)
-    Map.put(common_params, :sign, signature)
+
+    common_params
+    |> Map.merge(%{sign: signature, access_token: credential.access_token})
+    |> Helpers.clean_nil()
   end
 end

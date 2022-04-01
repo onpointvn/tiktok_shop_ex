@@ -8,7 +8,7 @@ defmodule TiktokShop.Client do
   """
   require Logger
 
-  @default_endpoint "https://open-api.tiktokglobalshop.com/"
+  @default_endpoint "https://open-api.tiktokglobalshop.com"
   @doc """
   Create a new client with given credential
 
@@ -29,7 +29,7 @@ defmodule TiktokShop.Client do
       shop_id: :string
     }
 
-    config = get_config()
+    config = TiktokShop.Support.Helpers.get_config()
     credential = Map.merge(config.credential, opts[:credential] || %{})
 
     with {:ok, data} <- Contrak.validate(credential, credential_schema) do
@@ -37,7 +37,10 @@ defmodule TiktokShop.Client do
         {Tesla.Middleware.Timeout, timeout: config.timeout},
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
         {Tesla.Middleware.Opts,
-         [adapter: [proxy: config.proxy], credential: Map.merge(credential, data), response_handler: config.response_handler]},
+         [
+           adapter: [proxy: config.proxy],
+           credential: Map.merge(credential, data)
+         ]},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
         Tesla.Middleware.JSON,
@@ -67,7 +70,7 @@ defmodule TiktokShop.Client do
   def get(client, path, opts \\ []) do
     client
     |> Tesla.get(path, [{:opts, [api_name: path]} | opts])
-    |> client.opts.response_handler.handle_response.()
+    |> process()
   end
 
   @doc """
@@ -82,21 +85,16 @@ defmodule TiktokShop.Client do
   def post(client, path, body, opts \\ []) do
     client
     |> Tesla.post(path, body, [{:opts, [api_name: path]} | opts])
-    |> client.opts.response_handler.handle_response.()
+    |> process()
   end
 
-  # get client config, support runtime config `{:system, "ENV_KEY"}`
-  defp get_config() do
-    options = TiktokShop.Support.Helpers.load_env(:tiktok_shop, :config)
+  defp process(response) do
+    module =
+      Application.get_env(:tiktok_shop, :config, [])
+      |> Keyword.get(:response_handler, __MODULE__)
 
-    %{
-      timeout: options[:timeout] || 60_000,
-      proxy: options[:proxy],
-      credential: Map.new(options[:credential] || []),
-      response_handler: __MODULE__
-    }
+    module.handle_response(response)
   end
-
 
   @doc """
   Default response handler for request, user can customize by pass custom module in config
@@ -119,6 +117,3 @@ defmodule TiktokShop.Client do
     end
   end
 end
-
-
-

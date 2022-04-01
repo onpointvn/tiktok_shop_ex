@@ -1,4 +1,23 @@
 defmodule TiktokShop.Support.Helpers do
+  @moduledoc """
+    Support helpers function for Tiktok API
+  """
+
+  @default_timeout 60_000
+
+  @doc """
+  Get client config, support runtime config `{:system, "ENV_KEY"}`
+  """
+  def get_config() do
+    options = load_env(:tiktok_shop, :config)
+
+    %{
+      timeout: options[:timeout] || @default_timeout,
+      proxy: options[:proxy],
+      credential: Map.new(options[:credential] || [])
+    }
+  end
+
   @doc """
   Build signature from request params and api_name
   """
@@ -17,7 +36,7 @@ defmodule TiktokShop.Support.Helpers do
 
     :crypto.mac(:hmac, algorithm, secret_key, data)
     |> Base.encode16()
-    |> String.upcase()
+    |> String.downcase()
   end
 
   @doc """
