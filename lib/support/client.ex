@@ -30,12 +30,12 @@ defmodule TiktokShop.Client do
     }
 
     config = get_config()
-    credential = opts[:credential] || config.credential
+    credential = Map.merge(config.credential, opts[:credential] || %{})
 
     with {:ok, data} <- Contrak.validate(credential, credential_schema) do
       middlewares = [
         {Tesla.Middleware.Timeout, timeout: config.timeout},
-        {Tesla.Middleware.BaseUrl, @default_endpoint},
+        {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
         {Tesla.Middleware.Opts,
          [adapter: [proxy: config.proxy], credential: Map.merge(credential, data), response_handler: config.response_handler]},
         TiktokShop.Support.SignRequest,

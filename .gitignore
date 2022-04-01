@@ -26,3 +26,5 @@ tiktok_ex-*.tar
 /tmp/
 
 mix.lock
+
+.iex.exs
