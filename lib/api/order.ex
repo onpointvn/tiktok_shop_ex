@@ -77,6 +77,7 @@ defmodule TiktokShop.Order do
     sort_type: [type: :integer, in: @sort_type_values],
     page_size: [type: :integer, number: [min: 1, max: 50]]
   }
+  @spec get_order_list(map(), keyword()) :: {:ok, map()} | {:error, any()}
   def get_order_list(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_order_list_schema),
          {:ok, client} <- Client.new(opts) do
@@ -92,6 +93,7 @@ defmodule TiktokShop.Order do
   @get_order_detail_schema %{
     order_id_list: [type: {:array, :string}, required: true, length: [max: 50]]
   }
+  @spec get_order_detail(map(), keyword()) :: {:ok, map()} | {:error, any()}
   def get_order_detail(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_order_detail_schema),
          {:ok, client} <- Client.new(opts) do
