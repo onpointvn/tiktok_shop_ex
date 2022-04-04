@@ -36,6 +36,7 @@ defmodule TiktokShop.Order do
   alias TiktokShop.Client
 
   alias TiktokShop.Order.OrderStatus
+  alias TiktokShop.Support.Helpers
 
   @sort_by_values ["CREATE_TIME", "UPDATE_TIME"]
 
@@ -81,7 +82,8 @@ defmodule TiktokShop.Order do
   def get_order_list(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_order_list_schema),
          {:ok, client} <- Client.new(opts) do
-      Client.post(client, "/api/orders/search", data)
+      payload = Helpers.clean_nil(data)
+      Client.post(client, "/api/orders/search", payload)
     end
   end
 
@@ -98,6 +100,27 @@ defmodule TiktokShop.Order do
     with {:ok, data} <- Contrak.validate(params, @get_order_detail_schema),
          {:ok, client} <- Client.new(opts) do
       Client.post(client, "/api/orders/detail/query", data)
+    end
+  end
+
+  @doc """
+  Ship order
+
+  Reference: https://bytedance.feishu.cn/wiki/wikcntMLczW460imZUfYqaa1Dng#7OH0ao
+  """
+  @ship_order_schema %{
+    order_id: [type: :string, required: true],
+    self_shipment: %{
+      tracking_number: [type: :string, required: true],
+      shipping_provider_id: [type: :string, required: true]
+    }
+  }
+  @spec ship_order(map(), keyword()) :: {:ok, map()} | {:error, any()}
+  def ship_order(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @ship_order_schema),
+         {:ok, client} <- Client.new(opts) do
+      payload = Helpers.clean_nil(data)
+      Client.post(client, "/api/order/rts", payload)
     end
   end
 end
