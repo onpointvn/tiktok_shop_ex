@@ -19,4 +19,15 @@ defmodule TiktokShop.Logistics do
       Client.get(client, "/api/logistics/ship/get", query: data)
     end
   end
+
+  @doc """
+  Get shipping providers
+
+  Reference: https://bytedance.feishu.cn/wiki/wikcnDCHk9oWB9iqsb58BX9Mlkf#ZIxgfI
+  """
+  def get_shipping_providers(opts \\ []) do
+    with {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/logistics/shipping_providers")
+    end
+  end
 end
