@@ -1,25 +1,40 @@
 defmodule TiktokShop.Client do
   @moduledoc """
-  Process and sign data before sending to Lazada and process response from Lazada
+  Process and sign data before sending to Tiktok and process response from Tiktok server
   Proxy could be config
 
       config :tiktok_shop, :config,
-            proxy: "http://127.0.0.1:9090"
+            proxy: "http://127.0.0.1:9090",
+            app_key: "",
+            app_secret: "",
+            response_handler: MyModule
+
+  Your custom reponse handler module must implement `handle_response/1`
   """
   require Logger
 
-  @default_endpoint "https://open-api.tiktokglobalshop.com/"
+  @default_endpoint "https://open-api.tiktokglobalshop.com"
   @doc """
-  Create a new client with given credential
+  Create a new client with given credential.
+  Credential can be set using config.
 
-  To pass proxy to Hackney use this
+      config :tiktok_shop, :config
+            app_key: "",
+            app_secret: ""
 
-      Tesla.client([{Tesla.Middleware.Opts, adapter: [proxy: {'133.18.173.18', 60088}]}])
+  Or could be pass via `opts` argument
 
   **Options**
-  - `require_token [boolean]`: does this reqest require access token. Default `true`
+  - `credential [map]`: app credential for request.
+    Credential map follow schema belows
+    
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
+    access_token: :string,
+    shop_id: :string
+    
+
   - `endpoint [string]`: custom endpoint
-  - `form_false [boolean]`: does this default use `url encoded request`. Default `false`, using JSON request
   """
   def new(opts \\ []) do
     credential_schema = %{
@@ -29,7 +44,7 @@ defmodule TiktokShop.Client do
       shop_id: :string
     }
 
-    config = get_config()
+    config = TiktokShop.Support.Helpers.get_config()
     credential = Map.merge(config.credential, opts[:credential] || %{})
 
     with {:ok, data} <- Contrak.validate(credential, credential_schema) do
@@ -37,7 +52,10 @@ defmodule TiktokShop.Client do
         {Tesla.Middleware.Timeout, timeout: config.timeout},
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
         {Tesla.Middleware.Opts,
-         [adapter: [proxy: config.proxy], credential: Map.merge(credential, data), response_handler: config.response_handler]},
+         [
+           adapter: [proxy: config.proxy],
+           credential: Map.merge(credential, data)
+         ]},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
         Tesla.Middleware.JSON,
@@ -67,7 +85,7 @@ defmodule TiktokShop.Client do
   def get(client, path, opts \\ []) do
     client
     |> Tesla.get(path, [{:opts, [api_name: path]} | opts])
-    |> client.opts.response_handler.handle_response.()
+    |> process()
   end
 
   @doc """
@@ -82,21 +100,16 @@ defmodule TiktokShop.Client do
   def post(client, path, body, opts \\ []) do
     client
     |> Tesla.post(path, body, [{:opts, [api_name: path]} | opts])
-    |> client.opts.response_handler.handle_response.()
+    |> process()
   end
 
-  # get client config, support runtime config `{:system, "ENV_KEY"}`
-  defp get_config() do
-    options = TiktokShop.Support.Helpers.load_env(:tiktok_shop, :config)
+  defp process(response) do
+    module =
+      Application.get_env(:tiktok_shop, :config, [])
+      |> Keyword.get(:response_handler, __MODULE__)
 
-    %{
-      timeout: options[:timeout] || 60_000,
-      proxy: options[:proxy],
-      credential: Map.new(options[:credential] || []),
-      response_handler: __MODULE__
-    }
+    module.handle_response(response)
   end
-
 
   @doc """
   Default response handler for request, user can customize by pass custom module in config
@@ -119,6 +132,3 @@ defmodule TiktokShop.Client do
     end
   end
 end
-
-
-

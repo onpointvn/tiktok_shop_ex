@@ -25,6 +25,7 @@ defmodule TiktokShop.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:contrak, "~> 0.1"},
       {:tesla, "~> 1.4"},
+      {:hackney, "~> 1.17", optional: true},
       {:castore, "~> 0.1"},
       {:jason, ">= 1.0.0"}
     ]
