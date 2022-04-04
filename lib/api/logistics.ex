@@ -30,4 +30,15 @@ defmodule TiktokShop.Logistics do
       Client.get(client, "/api/logistics/shipping_providers")
     end
   end
+
+  @doc """
+  Get warehouse list
+
+  Reference: https://bytedance.feishu.cn/wiki/wikcnDCHk9oWB9iqsb58BX9Mlkf#jN96M1
+  """
+  def get_warehouse_list(opts \\ []) do
+    with {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/logistics/get_warehouse_list")
+    end
+  end
 end
