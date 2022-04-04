@@ -1,4 +1,4 @@
-defmodule TiktokShop.Logistic do
+defmodule TiktokShop.Logistics do
   @moduledoc """
   Logistic API
   """
