@@ -58,4 +58,21 @@ defmodule TiktokShop.Logistics do
       Client.get(client, "/api/logistics/get_warehouse_list")
     end
   end
+
+  @doc """
+  Get shipping document
+
+  Reference: https://bytedance.feishu.cn/wiki/wikcnDCHk9oWB9iqsb58BX9Mlkf#ebaiqa
+  """
+  @get_shipping_document_schema %{
+    order_id: [type: :string, required: true],
+    document_type: [type: :string, default: "SHIPPING_LABEL"],
+    document_size: [type: :string]
+  }
+  def get_shipping_document(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @get_shipping_document_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/logistics/shipping_document", query: data)
+    end
+  end
 end
