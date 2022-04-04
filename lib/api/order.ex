@@ -83,4 +83,19 @@ defmodule TiktokShop.Order do
       Client.post(client, "/api/orders/search", data)
     end
   end
+
+  @doc """
+  Get order detail
+
+  Reference: https://bytedance.feishu.cn/wiki/wikcntMLczW460imZUfYqaa1Dng#kOhXuO
+  """
+  @get_order_detail_schema %{
+    order_id_list: [type: {:array, :string}, required: true, length: [max: 50]]
+  }
+  def get_order_detail(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @get_order_detail_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/orders/detail/query", data)
+    end
+  end
 end
