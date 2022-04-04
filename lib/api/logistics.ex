@@ -1,6 +1,6 @@
 defmodule TiktokShop.Logistics do
   @moduledoc """
-  Logistic API
+  Logistics API
   """
 
   alias TiktokShop.Client
