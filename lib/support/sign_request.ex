@@ -36,6 +36,7 @@ defmodule TiktokShop.Support.SignRequest do
     params =
       Map.merge(params, common_params)
       |> Helpers.clean_nil()
+      |> Map.delete(:access_token)
 
     signature = Helpers.sign(params, env.opts[:api_name], credential.app_secret)
 

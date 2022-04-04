@@ -7,7 +7,9 @@ defmodule TiktokShop.Client do
             proxy: "http://127.0.0.1:9090",
             app_key: "",
             app_secret: "",
-            response_handler: MyModule
+            timeout: 10_000,
+            response_handler: MyModule,
+            middlewares: [] # custom middlewares
 
   Your custom reponse handler module must implement `handle_response/1`
   """
@@ -49,7 +51,6 @@ defmodule TiktokShop.Client do
 
     with {:ok, data} <- Contrak.validate(credential, credential_schema) do
       middlewares = [
-        {Tesla.Middleware.Timeout, timeout: config.timeout},
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
         {Tesla.Middleware.Opts,
          [
@@ -58,17 +59,18 @@ defmodule TiktokShop.Client do
          ]},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
-        Tesla.Middleware.JSON,
-        Tesla.Middleware.Logger
+        Tesla.Middleware.JSON
       ]
 
-      client =
-        Tesla.client(
-          middlewares,
-          {Tesla.Adapter.Hackney, recv_timeout: config.timeout}
-        )
+      # if config setting timeout, otherwise use default settings
+      middlewares =
+        if config.timeout do
+          [{Tesla.Middleware.Timeout, timeout: config.timeout} | middlewares]
+        else
+          middlewares
+        end
 
-      {:ok, client}
+      {:ok, Tesla.client(middlewares ++ config.middlewares)}
     end
   end
 
@@ -126,8 +128,6 @@ defmodule TiktokShop.Client do
         end
 
       {_, _result} ->
-        Logger.info("TiktokShop connection error: #{inspect(response)}")
-
         {:error, %{type: :system_error, response: response}}
     end
   end
