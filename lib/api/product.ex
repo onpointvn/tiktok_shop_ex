@@ -23,9 +23,9 @@ defmodule TiktokShop.Product do
     create_time_from: [type: :integer, number: [min: 0]],
     create_time_to: [type: :integer, number: [min: 0]]
   }
-  def get_product_list(params, credential \\ []) do
+  def get_product_list(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_product_list_schema),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.post(client, "/api/products/search", nil, query: data)
     end
   end
@@ -38,9 +38,9 @@ defmodule TiktokShop.Product do
   @get_product_detail_schema %{
     product_id: [type: :string, required: true]
   }
-  def get_product_detail(params, credential \\ []) do
+  def get_product_detail(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_product_detail_schema),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.get(client, "/api/products/details", query: data)
     end
   end
@@ -55,9 +55,9 @@ defmodule TiktokShop.Product do
   @deactive_products_schema %{
     product_ids: [type: {:array, :string}, required: true]
   }
-  def deactive_products(params, credential \\ []) do
+  def deactive_products(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @deactive_products_schema),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.post(client, "/api/products/inactivated_products", data)
     end
   end
@@ -72,9 +72,9 @@ defmodule TiktokShop.Product do
   @delete_products_schema %{
     product_ids: [type: {:array, :string}, required: true]
   }
-  def delete_products(params, credential \\ []) do
+  def delete_products(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @delete_products_schema),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.delete(client, "/api/products", body: data)
     end
   end
@@ -85,8 +85,8 @@ defmodule TiktokShop.Product do
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#jIY8hJ
 
   """
-  def get_categories(credential \\ []) do
-    with {:ok, client} <- Client.new(credential) do
+  def get_categories(opts \\ []) do
+    with {:ok, client} <- Client.new(opts) do
       Client.get(client, "/api/products/categories")
     end
   end
@@ -100,9 +100,9 @@ defmodule TiktokShop.Product do
     category_id: [type: :string, required: true]
   }
   @spec get_attributes(nil | maybe_improper_list | map) :: {:error, any} | {:ok, any}
-  def get_attributes(params, credential \\ []) do
+  def get_attributes(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_attributes_schema),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.get(client, "/api/products/attributes", query: data)
     end
   end
@@ -116,9 +116,9 @@ defmodule TiktokShop.Product do
     category_id: [type: :string, required: true]
   }
   @spec get_categories_rules(nil | maybe_improper_list | map) :: {:error, any} | {:ok, any}
-  def get_categories_rules(params, credential \\ []) do
+  def get_categories_rules(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_categories_rules_schema),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.get(client, "/api/products/categories/rules", query: data)
     end
   end
@@ -128,8 +128,8 @@ defmodule TiktokShop.Product do
 
   References: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#IPng1X
   """
-  def get_brands(credential \\ []) do
-    with {:ok, client} <- Client.new(credential) do
+  def get_brands(opts \\ []) do
+    with {:ok, client} <- Client.new(opts) do
       Client.get(client, "/api/products/brands")
     end
   end
@@ -152,9 +152,9 @@ defmodule TiktokShop.Product do
     img_data: [type: :string, required: true],
     img_scene: [type: :integer, required: true]
   }
-  def upload_images(params, credential \\ []) do
+  def upload_images(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @upload_image_scheme),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.post(client, "/api/products/upload_imgs", data)
     end
   end
@@ -172,9 +172,9 @@ defmodule TiktokShop.Product do
     file_data: [type: :string, required: true],
     file_name: [type: :string, required: true]
   }
-  def upload_files(params, credential \\ []) do
+  def upload_files(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @update_files_scheme),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.post(client, "/api/products/upload_files", data)
     end
   end
@@ -247,9 +247,9 @@ defmodule TiktokShop.Product do
       required: true
     ]
   }
-  def create_product(params, credential \\ []) do
+  def create_product(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @create_product_scheme),
-         {:ok, client} <- Client.new(credential) do
+         {:ok, client} <- Client.new(opts) do
       Client.post(client, "/api/products", data)
     end
   end
