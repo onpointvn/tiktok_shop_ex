@@ -1,4 +1,4 @@
-defmodule TiktokShop.DataCase do
+defmodule TiktokShopTest.DataCase do
   use ExUnit.CaseTemplate
 
   setup tags do

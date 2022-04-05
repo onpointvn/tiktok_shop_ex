@@ -1,5 +1,5 @@
 defmodule TiktokShopTest.ClientTest do
-  use TiktokShop.DataCase
+  use TiktokShopTest.DataCase
 
   defmodule CustomHandler1 do
     def handle_response(response) do
