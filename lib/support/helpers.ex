@@ -3,8 +3,6 @@ defmodule TiktokShop.Support.Helpers do
     Support helpers function for Tiktok API
   """
 
-  @default_timeout 60_000
-
   @doc """
   Get client config, support runtime config `{:system, "ENV_KEY"}`
   """
@@ -12,9 +10,10 @@ defmodule TiktokShop.Support.Helpers do
     options = load_env(:tiktok_shop, :config)
 
     %{
-      timeout: options[:timeout] || @default_timeout,
+      timeout: options[:timeout],
       proxy: options[:proxy],
-      credential: Map.new(options[:credential] || [])
+      credential: Map.new(options[:credential] || []),
+      middlewares: options[:middlewares] || []
     }
   end
 
