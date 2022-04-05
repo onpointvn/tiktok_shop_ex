@@ -1,9 +1,9 @@
 defmodule TiktokShop.Logistics.DocumentTypes do
-  defp shipping_label, do: "SHIPPING_LABEL"
+  def shipping_label, do: "SHIPPING_LABEL"
 
-  defp pick_list, do: "PICK_LIST"
+  def pick_list, do: "PICK_LIST"
 
-  defp sl_pl, do: "SL_PL"
+  def sl_pl, do: "SL_PL"
 
   def enum do
     [
@@ -15,7 +15,7 @@ defmodule TiktokShop.Logistics.DocumentTypes do
 end
 
 defmodule TiktokShop.Logistics.DocumentSizes do
-  defp a5, do: "A5"
+  def a5, do: "A5"
 
   def a6, do: "A6"
 
