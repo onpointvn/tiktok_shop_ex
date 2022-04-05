@@ -28,3 +28,8 @@ tiktok_ex-*.tar
 mix.lock
 
 .iex.exs
+lib/api/data_list_category
+lib/api/DataResults_GetCategories
+lib/api/DataResults_ProductDetail
+lib/api/DataResults_ProductList
+lib/api/uploadImage_Test
