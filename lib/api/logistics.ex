@@ -1,4 +1,7 @@
-defmodule TiktokShop.Logistics.DocumentTypes do
+defmodule TiktokShop.Logistics.DocumentType do
+  @moduledoc """
+  Document types for TikTok shop
+  """
   def shipping_label, do: "SHIPPING_LABEL"
 
   def pick_list, do: "PICK_LIST"
@@ -14,7 +17,10 @@ defmodule TiktokShop.Logistics.DocumentTypes do
   end
 end
 
-defmodule TiktokShop.Logistics.DocumentSizes do
+defmodule TiktokShop.Logistics.DocumentSize do
+  @moduledoc """
+  Document sizes for TikTok shop
+  """
   def a5, do: "A5"
 
   def a6, do: "A6"
@@ -33,8 +39,8 @@ defmodule TiktokShop.Logistics do
   """
 
   alias TiktokShop.Client
-  alias TiktokShop.Logistics.DocumentTypes
-  alias TiktokShop.Logistics.DocumentSizes
+  alias TiktokShop.Logistics.DocumentType
+  alias TiktokShop.Logistics.DocumentSize
 
   @doc """
   Get shipping info
@@ -97,12 +103,13 @@ defmodule TiktokShop.Logistics do
   """
   @get_shipping_document_schema %{
     order_id: [type: :string, required: true],
-    document_type: [type: :string, in: DocumentTypes.enum()],
-    document_size: [type: :string, in: DocumentSizes.enum(), default: DocumentSizes.a6()]
+    document_type: [type: :string, in: DocumentType.enum(), required: true],
+    document_size: [type: :string, in: DocumentSize.enum()]
   }
   def get_shipping_document(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_shipping_document_schema),
          {:ok, client} <- Client.new(opts) do
+      data = TiktokShop.Support.Helpers.clean_nil(data)
       Client.get(client, "/api/logistics/shipping_document", query: data)
     end
   end
