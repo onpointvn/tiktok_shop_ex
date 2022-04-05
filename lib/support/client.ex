@@ -7,7 +7,9 @@ defmodule TiktokShop.Client do
             proxy: "http://127.0.0.1:9090",
             app_key: "",
             app_secret: "",
-            response_handler: MyModule
+            timeout: 10_000,
+            response_handler: MyModule,
+            middlewares: [] # custom middlewares
 
   Your custom reponse handler module must implement `handle_response/1`
   """
@@ -49,7 +51,6 @@ defmodule TiktokShop.Client do
 
     with {:ok, data} <- Contrak.validate(credential, credential_schema) do
       middlewares = [
-        {Tesla.Middleware.Timeout, timeout: config.timeout},
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
         {Tesla.Middleware.Opts,
          [
@@ -58,17 +59,18 @@ defmodule TiktokShop.Client do
          ]},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
-        Tesla.Middleware.JSON,
-        Tesla.Middleware.Logger
+        Tesla.Middleware.JSON
       ]
 
-      client =
-        Tesla.client(
-          middlewares,
-          {Tesla.Adapter.Hackney, recv_timeout: config.timeout}
-        )
+      # if config setting timeout, otherwise use default settings
+      middlewares =
+        if config.timeout do
+          [{Tesla.Middleware.Timeout, timeout: config.timeout} | middlewares]
+        else
+          middlewares
+        end
 
-      {:ok, client}
+      {:ok, Tesla.client(middlewares ++ config.middlewares)}
     end
   end
 
@@ -89,6 +91,21 @@ defmodule TiktokShop.Client do
   end
 
   @doc """
+  Perform a POST request.
+
+      post("/users", %{name: "Jon"})
+      post("/users", %{name: "Jon"}, query: [scope: "admin"])
+      post(client, "/users", %{name: "Jon"})
+      post(client, "/users", %{name: "Jon"}, query: [scope: "admin"])
+  """
+  @spec post(Tesla.Client.t(), String.t(), map(), keyword()) :: {:ok, any()} | {:error, any()}
+  def post(client, path, body, opts \\ []) do
+    client
+    |> Tesla.post(path, body, [{:opts, [api_name: path]} | opts])
+    |> process()
+  end
+
+  @doc """
   Perform a DELETE request
 
       delete("/users")
@@ -101,21 +118,6 @@ defmodule TiktokShop.Client do
   def delete(client, path, opts \\ []) do
     client
     |> Tesla.delete(path, [{:opts, [api_name: path]} | opts])
-    |> process()
-  end
-
-  @doc """
-  Perform a POST request.
-
-      post("/users", %{name: "Jon"})
-      post("/users", %{name: "Jon"}, query: [scope: "admin"])
-      post(client, "/users", %{name: "Jon"})
-      post(client, "/users", %{name: "Jon"}, query: [scope: "admin"])
-  """
-  @spec post(Tesla.Client.t(), String.t(), map(), keyword()) :: {:ok, any()} | {:error, any()}
-  def post(client, path, body, opts \\ []) do
-    client
-    |> Tesla.post(path, body, [{:opts, [api_name: path]} | opts])
     |> process()
   end
 
@@ -142,8 +144,6 @@ defmodule TiktokShop.Client do
         end
 
       {_, _result} ->
-        Logger.info("TiktokShop connection error: #{inspect(response)}")
-
         {:error, %{type: :system_error, response: response}}
     end
   end
