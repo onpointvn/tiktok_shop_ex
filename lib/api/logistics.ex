@@ -1,9 +1,40 @@
+defmodule TiktokShop.Logistics.DocumentTypes do
+  defp shipping_label, do: "SHIPPING_LABEL"
+
+  defp pick_list, do: "PICK_LIST"
+
+  defp sl_pl, do: "SL_PL"
+
+  def enum do
+    [
+      shipping_label(),
+      pick_list(),
+      sl_pl()
+    ]
+  end
+end
+
+defmodule TiktokShop.Logistics.DocumentSizes do
+  defp a5, do: "A5"
+
+  def a6, do: "A6"
+
+  def enum do
+    [
+      a5(),
+      a6()
+    ]
+  end
+end
+
 defmodule TiktokShop.Logistics do
   @moduledoc """
   Logistics API
   """
 
   alias TiktokShop.Client
+  alias TiktokShop.Logistics.DocumentTypes
+  alias TiktokShop.Logistics.DocumentSizes
 
   @doc """
   Get shipping info
@@ -66,8 +97,8 @@ defmodule TiktokShop.Logistics do
   """
   @get_shipping_document_schema %{
     order_id: [type: :string, required: true],
-    document_type: [type: :string, default: "SHIPPING_LABEL"],
-    document_size: [type: :string]
+    document_type: [type: :string, in: DocumentTypes.enum()],
+    document_size: [type: :string, in: DocumentSizes.enum(), default: DocumentSizes.a6()]
   }
   def get_shipping_document(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_shipping_document_schema),
