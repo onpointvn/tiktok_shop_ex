@@ -106,6 +106,21 @@ defmodule TiktokShop.Client do
   end
 
   @doc """
+  Perform a POST request.
+
+      post("/users", %{name: "Jon"})
+      post("/users", %{name: "Jon"}, query: [scope: "admin"])
+      post(client, "/users", %{name: "Jon"})
+      post(client, "/users", %{name: "Jon"}, query: [scope: "admin"])
+  """
+  @spec put(Tesla.Client.t(), String.t(), map(), keyword()) :: {:ok, any()} | {:error, any()}
+  def put(client, path, body, opts \\ []) do
+    client
+    |> Tesla.put(path, body, [{:opts, [api_name: path]} | opts])
+    |> process()
+  end
+
+  @doc """
   Perform a DELETE request
 
       delete("/users")
