@@ -29,12 +29,12 @@ defmodule TiktokShop.Client do
   **Options**
   - `credential [map]`: app credential for request.
     Credential map follow schema belows
-    
+
     app_key: [type: :string, required: true],
     app_secret: [type: :string, required: true],
     access_token: :string,
     shop_id: :string
-    
+
 
   - `endpoint [string]`: custom endpoint
   """
@@ -102,6 +102,22 @@ defmodule TiktokShop.Client do
   def post(client, path, body, opts \\ []) do
     client
     |> Tesla.post(path, body, [{:opts, [api_name: path]} | opts])
+    |> process()
+  end
+
+  @doc """
+  Perform a DELETE request
+
+      delete("/users")
+      delete("/users", query: [scope: "admin"])
+      delete(client, "/users")
+      delete(client, "/users", query: [scope: "admin"])
+      delete(client, "/users", body: %{name: "Jon"})
+  """
+  @spec delete(Tesla.Client.t(), String.t(), keyword()) :: {:ok, any()} | {:error, any()}
+  def delete(client, path, opts \\ []) do
+    client
+    |> Tesla.delete(path, [{:opts, [api_name: path]} | opts])
     |> process()
   end
 

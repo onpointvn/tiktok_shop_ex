@@ -28,3 +28,5 @@ tiktok_ex-*.tar
 mix.lock
 
 .iex.exs
+
+test/response_test_data
