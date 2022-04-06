@@ -198,6 +198,37 @@ defmodule TiktokShop.Product do
        }}
   }
 
+  @doc """
+  Creat new product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#ahrYRK
+
+  `product_name`: Type string, Product name, Chinese characters are not allowed, and the character length must not exceed 188.
+  `description`: Type string, Product description, follow rules:
+                  - Chinese characters are not allowed.
+                  - This field character limit needs to be within 10000 characters.
+                  - Must conform to html syntax. Currently only supports <p><img><ul><li> tags, and Tags cannot be nested.
+  `category_id`: Type string, Get from list category and must be a leaf category.
+  `images`: Type array - string, list product images allow up to 9 pictures. Id_image get from response data in action UploadImage, exp: %{id: "tos-maliva-i-o3syd03w52-us/92e5e74cc8644401960b5763542093a7"}.
+  `warranty_period`: Type integer, Value from 1 to 21, please see description warranty period in file enum "warranty_period.ex"
+  `warranty_policy`: Type string, Description for the warranty policy, Chinese characters are not allowed. The character length needs to be within 99
+  `package_length`: Type integer, and max value 60.
+  `package_width`: Type integer, and max value 40.
+  `package_height`: Type integer, and max value 35.
+  `package_weight`: Type string, and max value 20. Up to two digits after the decimal point
+  `is_cod_open`: Type boolean, turn on or off the cod (Cash on Delivery)
+  `skus`: Type array the object, the number of sku in a product cannot exceed 100
+        -> sales_attributes: Type array the object
+              ->-> attribute_id: Type string, get from list Attribute. Have 2 value:  "100000" for color and "100089" for another custom value
+              ->-> custom_value: Type string. Chinese characters are not allowed. The character length must not exceed 20. There are up to 100 attribute values under each sale attribute, but there can be no duplicate sales attribute values under the same sales attribute
+              ->-> sku_img: Type object
+                ->->-> id: Id_image get from response data in action UploadImage, exp: %{id: "tos-maliva-i-o3syd03w52-us/92e5e74cc8644401960b5763542093a7"}.
+        -> stock_infos: Type array the object
+              ->-> warehouse_id: Type string, get from list warehouse. Note: must get warehouse_id have field "warehouse_type" = 1 (sales warehouse), don't get "warehouse_type" = 2 (return warehouse) or "warehouse_type" = 3 (local return warehouse)
+              ->-> available_stock: Type integer, the value should be non-negative numbers（include number 0). The upper limit of the available stock value set at a time is 99999
+        -> seller_sku: Type string, Chinese characters are not allowed. The character length must not exceed 50.
+        -> original_price: Type string.
+  """
   @sales_attribute_schema %{
     attribute_id: [type: :string, required: true],
     value_id: :string,
@@ -206,17 +237,18 @@ defmodule TiktokShop.Product do
       id: [type: :string, required: true]
     }
   }
-  @stock_info_schema %{
-    warehouse_id: [type: :string, required: true],
-    available_stock: [type: :integer, required: true]
-  }
 
   @sku_schema %{
     sales_attributes: [
       type: {:array, @sales_attribute_schema},
       required: true
     ],
-    stock_infos: {:array, @stock_info_schema},
+    stock_infos:
+      {:array,
+       %{
+         warehouse_id: [type: :string, required: true],
+         available_stock: [type: :integer, required: true]
+       }},
     seller_sku: :string,
     original_price: [type: :string, required: true]
   }
@@ -225,17 +257,17 @@ defmodule TiktokShop.Product do
     product_name: [type: :string, required: true],
     description: [type: :string, required: true],
     category_id: [type: :string, required: true],
-    brand_id: [type: :string, required: true],
+    brand_id: :string,
     images: [
       type: {:array, %{id: [type: :string, required: true]}},
       required: true
     ],
-    warranty_period: :integer,
-    warranty_policy: :integer,
-    package_length: :integer,
-    package_width: :integer,
-    package_height: :integer,
-    package_weight: :integer,
+    warranty_period: [type: :integer, in: TiktokShop.WarrantyPeriod.enum()],
+    warranty_policy: :string,
+    package_length: [type: :integer, number: [min: 1, max: 60]],
+    package_width: [type: :integer, number: [min: 1, max: 40]],
+    package_height: [type: :integer, number: [min: 1, max: 35]],
+    package_weight: [type: :string, required: true],
     size_chart: %{
       img_id: [type: :string, required: true]
     },
