@@ -19,7 +19,7 @@ defmodule TiktokShop.Token do
     with {:ok, data} <- Contrak.validate(params, @get_access_token_schema),
          {:ok, client} <- Client.new([{:endpoint, @endpoint} | opts]) do
       data = Map.put(data, :app_secret, get_app_secret(opts))
-      Client.post(client, "/api/token/getAccessToken", nil, query: data)
+      Client.post(client, "/api/token/getAccessToken", data)
     end
   end
 
