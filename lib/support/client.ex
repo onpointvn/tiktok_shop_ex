@@ -13,7 +13,6 @@ defmodule TiktokShop.Client do
 
   Your custom reponse handler module must implement `handle_response/1`
   """
-  require Logger
 
   @default_endpoint "https://open-api.tiktokglobalshop.com"
   @doc """
