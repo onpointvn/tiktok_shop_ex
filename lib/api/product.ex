@@ -55,7 +55,7 @@ defmodule TiktokShop.Product do
   `product_ids` array products need to deactive
   """
   @deactivate_products_schema %{
-    product_ids: [type: {:array, :string}, required: true]
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
   }
   def deactivate_products(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @deactivate_products_schema),
@@ -72,7 +72,7 @@ defmodule TiktokShop.Product do
   `product_ids` array products need to deactive
   """
   @delete_products_schema %{
-    product_ids: [type: {:array, :string}, required: true]
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
   }
   def delete_products(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @delete_products_schema),
@@ -115,7 +115,10 @@ defmodule TiktokShop.Product do
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#Vo9x7O
   """
   @get_category_rules_schema %{
-    category_id: [type: :string, required: true]
+    category_id: [
+      type: :string,
+      required: true
+    ]
   }
   @spec get_category_rules(map(), keyword()) :: {:ok, map()} | {:error, any()}
   def get_category_rules(params, opts \\ []) do
@@ -155,7 +158,7 @@ defmodule TiktokShop.Product do
   """
   @upload_image_schema %{
     img_data: [type: :string, required: true],
-    img_scene: [type: :integer, required: true]
+    img_scene: [type: :integer, required: true, number: [min: 1, max: 5]]
   }
   def upload_images(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @upload_image_schema),
@@ -356,7 +359,8 @@ defmodule TiktokShop.Product do
       type:
         {:array,
          %{id: [type: :string, required: true], original_price: [type: :string, required: true]}},
-      required: true
+      required: true,
+      length: [min: 1]
     ]
   }
   def update_price(params, opts \\ []) do
@@ -386,7 +390,7 @@ defmodule TiktokShop.Product do
            stock_infos: [
              type: {:array, @stock_info_schema},
              required: true,
-             length: [min: 1]
+             length: [min: 1, max: 99999]
            ]
          }},
       required: true,
@@ -397,6 +401,23 @@ defmodule TiktokShop.Product do
     with {:ok, data} <- Contrak.validate(params, @update_stock_schema),
          {:ok, client} <- Client.new(opts) do
       Client.put(client, "/api/products/stocks", data)
+    end
+  end
+
+  @doc """
+  Active product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#0gpofi
+
+  `product_ids` array products need to active
+  """
+  @active_product_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def active_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @active_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/activate", data)
     end
   end
 end
