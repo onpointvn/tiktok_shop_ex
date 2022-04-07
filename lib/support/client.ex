@@ -67,7 +67,8 @@ defmodule TiktokShop.Client do
         {Tesla.Middleware.Opts, options},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
-        Tesla.Middleware.JSON
+        Tesla.Middleware.JSON,
+        Tesla.Middleware.Logger
       ]
 
       # if config setting timeout, otherwise use default settings
