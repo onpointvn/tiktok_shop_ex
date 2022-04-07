@@ -365,4 +365,36 @@ defmodule TiktokShop.Product do
       Client.put(client, "/api/products/prices", data)
     end
   end
+
+  @doc """
+  Update stock
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#lf3UTU
+  """
+  @update_stock_schema %{
+    product_id: [type: :string, required: true],
+    skus: [
+      type:
+        {:array,
+         %{
+           id: [type: :string, required: true],
+           stock_infos: [
+             type:
+               {:array,
+                %{
+                  warehouse_id: :string,
+                  available_stock: [type: :integer, required: true]
+                }},
+             required: true
+           ]
+         }},
+      required: true
+    ]
+  }
+  def update_stock(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @update_stock_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.put(client, "/api/products/stocks", data)
+    end
+  end
 end
