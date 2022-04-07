@@ -36,6 +36,8 @@ defmodule TiktokShop.Client do
 
 
   - `endpoint [string]`: custom endpoint
+
+  - `skip_signing [boolean]`: Skip signing the data before sending a request
   """
 
   def new(opts \\ []) do
@@ -59,7 +61,6 @@ defmodule TiktokShop.Client do
           skip_signing: skip_signing
         ]
         |> TiktokShop.Support.Helpers.clean_nil()
-        |> IO.inspect()
 
       middlewares = [
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
