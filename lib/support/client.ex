@@ -49,7 +49,10 @@ defmodule TiktokShop.Client do
         nil
       end
 
-    with {:ok, credential} <- validate_credential(config.credential, opts[:credential]) do
+    credential = Map.merge(config.credential, opts[:credential] || %{})
+    skip_signing = opts[:skip_signing] || false
+
+    with {:ok, credential} <- validate_credential(credential, skip_signing) do
       options =
         [
           adapter: proxy_adapter,
@@ -84,30 +87,11 @@ defmodule TiktokShop.Client do
     access_token: :string,
     shop_id: :string
   }
-  defp validate_credential(config_credential, optional_credential) do
-    credential_keys =
-      config_credential
-      |> Map.keys()
-      |> length()
-
-    credential =
-      cond do
-        credential_keys == 0 ->
-          optional_credential
-
-        is_nil(optional_credential) ->
-          config_credential
-
-        true ->
-          Map.merge(config_credential, optional_credential)
-      end
-
-    if is_nil(credential) do
-      {:ok, %{}}
-    else
-      Contrak.validate(credential, @credential_schema)
-    end
+  defp validate_credential(credential, false) do
+    Contrak.validate(credential, @credential_schema)
   end
+
+  defp validate_credential(_, _), do: {:ok, %{}}
 
   @doc """
   Perform a GET request
