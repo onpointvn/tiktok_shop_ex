@@ -53,9 +53,10 @@ defmodule TiktokShop.Client do
       options =
         [
           adapter: proxy_adapter,
-          credential: credential
+          credential: credential,
+          skip_signing: opts[:skip_signing] || false
         ]
-        |> Enum.filter(fn {_, value} -> not is_nil(value) end)
+        |> TiktokShop.Support.Helpers.clean_nil()
 
       middlewares = [
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
@@ -84,9 +85,14 @@ defmodule TiktokShop.Client do
     shop_id: :string
   }
   defp validate_credential(config_credential, optional_credential) do
+    credential_keys =
+      config_credential
+      |> Map.keys()
+      |> length()
+
     credential =
       cond do
-        is_nil(config_credential) ->
+        credential_keys == 0 ->
           optional_credential
 
         is_nil(optional_credential) ->
@@ -97,7 +103,7 @@ defmodule TiktokShop.Client do
       end
 
     if is_nil(credential) do
-      {:ok, nil}
+      {:ok, %{}}
     else
       Contrak.validate(credential, @credential_schema)
     end

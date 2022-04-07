@@ -8,14 +8,18 @@ defmodule TiktokShop.Support.SignRequest do
 
   @impl Tesla.Middleware
   def call(env, next, _) do
-    env
-    |> prepare_params(env.opts[:credential])
-    |> Tesla.run(next)
+    skip_signing = env.opts[:skip_signing]
+
+    if skip_signing do
+      env
+    else
+      env
+      |> prepare_params(env.opts[:credential])
+      |> Tesla.run(next)
+    end
   end
 
   # other request
-  defp prepare_params(env, nil), do: env
-
   defp prepare_params(env, credential) do
     common_params =
       Map.new(env.query)

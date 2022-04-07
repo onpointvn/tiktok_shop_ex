@@ -5,7 +5,10 @@ defmodule TiktokShop.Token do
 
   alias TiktokShop.Client
 
-  @endpoint "https://auth.tiktok-shops.com"
+  @options [
+    {:enpoint, "https://auth.tiktok-shops.com"},
+    {:skip_signing, true}
+  ]
 
   @doc """
   Exchange code for access token
@@ -20,7 +23,7 @@ defmodule TiktokShop.Token do
   }
   def get_access_token(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_access_token_schema),
-         {:ok, client} <- Client.new([{:endpoint, @endpoint} | opts]) do
+         {:ok, client} <- Client.new(@options ++ opts) do
       Client.post(client, "/api/token/getAccessToken", data)
     end
   end
@@ -38,7 +41,7 @@ defmodule TiktokShop.Token do
   }
   def refresh_token(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @refresh_token_schema),
-         {:ok, client} <- Client.new([{:endpoint, @endpoint} | opts]) do
+         {:ok, client} <- Client.new(@options ++ opts) do
       Client.post(client, "/api/token/refreshToken", data)
     end
   end
