@@ -9,10 +9,20 @@ defmodule TiktokShop.Support.Helpers do
   def get_config() do
     options = load_env(:tiktok_shop, :config)
 
+    credential =
+      options[:credential]
+      |> case do
+        nil ->
+          nil
+
+        value ->
+          Map.new(value)
+      end
+
     %{
       timeout: options[:timeout],
       proxy: options[:proxy],
-      credential: Map.new(options[:credential] || %{}),
+      credential: credential,
       middlewares: options[:middlewares] || []
     }
   end

@@ -38,12 +38,7 @@ defmodule TiktokShop.Client do
 
   - `endpoint [string]`: custom endpoint
   """
-  @credential_schema %{
-    app_key: [type: :string, required: true],
-    app_secret: [type: :string, required: true],
-    access_token: :string,
-    shop_id: :string
-  }
+
   def new(opts \\ []) do
     config = TiktokShop.Support.Helpers.get_config()
 
@@ -54,42 +49,57 @@ defmodule TiktokShop.Client do
         nil
       end
 
-    # In some case, we don't need to use credential
-    credential =
-      config.credential
-      |> Map.merge(opts[:credential] || %{})
-      |> Contrak.validate(@credential_schema)
-      |> case do
-        {:ok, data} ->
-          data
+    with {:ok, credential} <- validate_credential(config.credential, opts[:credential]) do
+      options =
+        [
+          adapter: proxy_adapter,
+          credential: credential
+        ]
+        |> Enum.filter(fn {_, value} -> not is_nil(value) end)
 
-        _ ->
-          nil
+      middlewares = [
+        {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
+        {Tesla.Middleware.Opts, options},
+        TiktokShop.Support.SignRequest,
+        TiktokShop.Support.SaveRequestBody,
+        Tesla.Middleware.JSON
+      ]
+
+      # if config setting timeout, otherwise use default settings
+      timeout = config.timeout || 8000
+
+      {:ok,
+       Tesla.client(
+         middlewares ++ config.middlewares,
+         {Tesla.Adapter.Hackney, recv_timeout: timeout}
+       )}
+    end
+  end
+
+  @credential_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
+    access_token: :string,
+    shop_id: :string
+  }
+  defp validate_credential(config_credential, optional_credential) do
+    credential =
+      cond do
+        is_nil(config_credential) ->
+          optional_credential
+
+        is_nil(optional_credential) ->
+          config_credential
+
+        true ->
+          Map.merge(config_credential, optional_credential)
       end
 
-    options =
-      [
-        adapter: proxy_adapter,
-        credential: credential
-      ]
-      |> Enum.filter(fn {_, value} -> not is_nil(value) end)
-
-    middlewares = [
-      {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
-      {Tesla.Middleware.Opts, options},
-      TiktokShop.Support.SignRequest,
-      TiktokShop.Support.SaveRequestBody,
-      Tesla.Middleware.JSON
-    ]
-
-    # if config setting timeout, otherwise use default settings
-    timeout = config.timeout || 8000
-
-    {:ok,
-     Tesla.client(
-       middlewares ++ config.middlewares,
-       {Tesla.Adapter.Hackney, recv_timeout: timeout}
-     )}
+    if is_nil(credential) do
+      {:ok, nil}
+    else
+      Contrak.validate(credential, @credential_schema)
+    end
   end
 
   @doc """
