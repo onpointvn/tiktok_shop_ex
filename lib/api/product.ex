@@ -55,7 +55,7 @@ defmodule TiktokShop.Product do
   `product_ids` array products need to deactive
   """
   @deactivate_products_schema %{
-    product_ids: [type: {:array, :string}, required: true, length: [min: 1, max: 100]]
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
   }
   def deactivate_products(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @deactivate_products_schema),
@@ -72,7 +72,7 @@ defmodule TiktokShop.Product do
   `product_ids` array products need to deactive
   """
   @delete_products_schema %{
-    product_ids: [type: {:array, :string}, required: true, length: [min: 1, max: 100]]
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
   }
   def delete_products(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @delete_products_schema),
@@ -158,7 +158,7 @@ defmodule TiktokShop.Product do
   """
   @upload_image_schema %{
     img_data: [type: :string, required: true],
-    img_scene: [type: :integer, required: true]
+    img_scene: [type: :integer, required: true, number: [min: 1, max: 5]]
   }
   def upload_images(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @upload_image_schema),
@@ -360,7 +360,7 @@ defmodule TiktokShop.Product do
         {:array,
          %{id: [type: :string, required: true], original_price: [type: :string, required: true]}},
       required: true,
-      length: [min: 1, max: 100]
+      length: [min: 1]
     ]
   }
   def update_price(params, opts \\ []) do
@@ -394,7 +394,7 @@ defmodule TiktokShop.Product do
            ]
          }},
       required: true,
-      length: [min: 1, max: 100]
+      length: [min: 1]
     ]
   }
   def update_stock(params, opts \\ []) do
@@ -412,7 +412,7 @@ defmodule TiktokShop.Product do
   `product_ids` array products need to active
   """
   @active_product_schema %{
-    product_ids: [type: {:array, :string}, required: true, length: [min: 1, max: 100]]
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
   }
   def active_product(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @active_product_schema),
