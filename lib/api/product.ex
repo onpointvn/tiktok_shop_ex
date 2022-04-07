@@ -420,4 +420,21 @@ defmodule TiktokShop.Product do
       Client.post(client, "/api/products/activate", data)
     end
   end
+
+  @doc """
+  Recover product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#
+
+  `product_ids` array products need to recover from list the product deleted
+  """
+  @recover_product_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def recover_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @recover_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/recover", data)
+    end
+  end
 end
