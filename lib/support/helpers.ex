@@ -12,7 +12,7 @@ defmodule TiktokShop.Support.Helpers do
     %{
       timeout: options[:timeout],
       proxy: options[:proxy],
-      credential: Map.new(options[:credential] || []),
+      credential: Map.new(options[:credential] || %{}),
       middlewares: options[:middlewares] || []
     }
   end

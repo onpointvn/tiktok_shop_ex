@@ -38,40 +38,58 @@ defmodule TiktokShop.Client do
 
   - `endpoint [string]`: custom endpoint
   """
+  @credential_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
+    access_token: :string,
+    shop_id: :string
+  }
   def new(opts \\ []) do
-    credential_schema = %{
-      app_key: [type: :string, required: true],
-      app_secret: [type: :string, required: true],
-      access_token: :string,
-      shop_id: :string
-    }
-
     config = TiktokShop.Support.Helpers.get_config()
-    credential = Map.merge(config.credential, opts[:credential] || %{})
 
-    with {:ok, data} <- Contrak.validate(credential, credential_schema) do
-      middlewares = [
-        {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
-        {Tesla.Middleware.Opts,
-         [
-           adapter: [proxy: config.proxy],
-           credential: Map.merge(credential, data)
-         ]},
-        TiktokShop.Support.SignRequest,
-        TiktokShop.Support.SaveRequestBody,
-        Tesla.Middleware.JSON
+    proxy_adapter =
+      if config.proxy do
+        [proxy: config.proxy]
+      else
+        nil
+      end
+
+    # In some case, we don't need to use credential
+    credential =
+      config.credential
+      |> Map.merge(opts[:credential] || %{})
+      |> Contrak.validate(@credential_schema)
+      |> case do
+        {:ok, data} ->
+          data
+
+        _ ->
+          nil
+      end
+
+    options =
+      [
+        adapter: proxy_adapter,
+        credential: credential
       ]
+      |> Enum.filter(fn {_, value} -> not is_nil(value) end)
 
-      # if config setting timeout, otherwise use default settings
-      middlewares =
-        if config.timeout do
-          [{Tesla.Middleware.Timeout, timeout: config.timeout} | middlewares]
-        else
-          middlewares
-        end
+    middlewares = [
+      {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
+      {Tesla.Middleware.Opts, options},
+      TiktokShop.Support.SignRequest,
+      TiktokShop.Support.SaveRequestBody,
+      Tesla.Middleware.JSON
+    ]
 
-      {:ok, Tesla.client(middlewares ++ config.middlewares)}
-    end
+    # if config setting timeout, otherwise use default settings
+    timeout = config.timeout || 8000
+
+    {:ok,
+     Tesla.client(
+       middlewares ++ config.middlewares,
+       {Tesla.Adapter.Hackney, recv_timeout: timeout}
+     )}
   end
 
   @doc """

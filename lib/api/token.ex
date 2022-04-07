@@ -4,6 +4,7 @@ defmodule TiktokShop.Token do
   """
 
   alias TiktokShop.Client
+
   @endpoint "https://auth.tiktok-shops.com"
 
   @doc """
@@ -12,14 +13,16 @@ defmodule TiktokShop.Token do
   Reference: https://bytedance.feishu.cn/docs/doccnROmkE6WI9zFeJuT3DQ3YOg#qYtWHF
   """
   @get_access_token_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
     auth_code: [type: :string, required: true],
     grant_type: [type: :string, default: "authorized_code"]
   }
   def get_access_token(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_access_token_schema),
          {:ok, client} <- Client.new([{:endpoint, @endpoint} | opts]) do
-      data = Map.put(data, :app_secret, get_app_secret(opts))
-      Client.post(client, "/api/token/getAccessToken", data)
+      payload = TiktokShop.Support.Helpers.clean_nil(data)
+      Client.post(client, "/api/token/getAccessToken", payload)
     end
   end
 
