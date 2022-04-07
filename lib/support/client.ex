@@ -66,8 +66,12 @@ defmodule TiktokShop.Client do
       ]
 
       # if config setting timeout, otherwise use default settings
-      # timeout = config.timeout || 8000
-      # {Tesla.Adapter.Hackney, recv_timeout: timeout}
+      middlewares =
+        if config.timeout do
+          [{Tesla.Middleware.Timeout, timeout: config.timeout} | middlewares]
+        else
+          middlewares
+        end
 
       {:ok, Tesla.client(middlewares ++ config.middlewares)}
     end
