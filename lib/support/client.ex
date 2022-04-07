@@ -92,7 +92,7 @@ defmodule TiktokShop.Client do
     Contrak.validate(credential, @credential_schema)
   end
 
-  defp validate_credential(_, _), do: {:ok, %{}}
+  defp validate_credential(_, _), do: {:ok, nil}
 
   @doc """
   Perform a GET request
