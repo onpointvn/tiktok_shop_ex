@@ -371,6 +371,11 @@ defmodule TiktokShop.Product do
 
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#lf3UTU
   """
+
+  @stock_info_schema %{
+    warehouse_id: [type: :string, required: true],
+    available_stock: [type: :integer, required: true]
+  }
   @update_stock_schema %{
     product_id: [type: :string, required: true],
     skus: [
@@ -379,16 +384,13 @@ defmodule TiktokShop.Product do
          %{
            id: [type: :string, required: true],
            stock_infos: [
-             type:
-               {:array,
-                %{
-                  warehouse_id: :string,
-                  available_stock: [type: :integer, required: true]
-                }},
-             required: true
+             type: {:array, @stock_info_schema},
+             required: true,
+             length: [min: 1]
            ]
          }},
-      required: true
+      required: true,
+      length: [min: 1]
     ]
   }
   def update_stock(params, opts \\ []) do
