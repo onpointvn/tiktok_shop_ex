@@ -155,7 +155,7 @@ defmodule TiktokShop.Product do
   """
   @upload_image_schema %{
     img_data: [type: :string, required: true],
-    img_scene: [type: :integer, required: true]
+    img_scene: [type: :integer, required: true, number: [min: 1, max: 5]]
   }
   def upload_images(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @upload_image_schema),
@@ -397,6 +397,40 @@ defmodule TiktokShop.Product do
     with {:ok, data} <- Contrak.validate(params, @update_stock_schema),
          {:ok, client} <- Client.new(opts) do
       Client.put(client, "/api/products/stocks", data)
+    end
+  end
+
+  @doc """
+  Active product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#0gpofi
+
+  `product_ids` array products need to active
+  """
+  @active_product_schema %{
+    product_ids: [type: {:array, :string}, required: true]
+  }
+  def active_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @active_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/activate", data)
+    end
+  end
+
+  @doc """
+  Recover product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#
+
+  `product_ids` array products need to recover from list the product deleted
+  """
+  @recover_product_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def recover_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @recover_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/recover", data)
     end
   end
 end
