@@ -4,7 +4,11 @@ defmodule TiktokShop.Token do
   """
 
   alias TiktokShop.Client
-  @endpoint "https://auth.tiktok-shops.com"
+
+  @options [
+    {:endpoint, "https://auth.tiktok-shops.com"},
+    {:skip_signing, true}
+  ]
 
   @doc """
   Exchange code for access token
@@ -12,13 +16,14 @@ defmodule TiktokShop.Token do
   Reference: https://bytedance.feishu.cn/docs/doccnROmkE6WI9zFeJuT3DQ3YOg#qYtWHF
   """
   @get_access_token_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
     auth_code: [type: :string, required: true],
     grant_type: [type: :string, default: "authorized_code"]
   }
   def get_access_token(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_access_token_schema),
-         {:ok, client} <- Client.new([{:endpoint, @endpoint} | opts]) do
-      data = Map.put(data, :app_secret, get_app_secret(opts))
+         {:ok, client} <- Client.new(@options ++ opts) do
       Client.post(client, "/api/token/getAccessToken", data)
     end
   end
@@ -29,22 +34,15 @@ defmodule TiktokShop.Token do
   Reference: https://bytedance.feishu.cn/docs/doccnROmkE6WI9zFeJuT3DQ3YOg#bG2h09
   """
   @refresh_token_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
     refresh_token: [type: :string, required: true],
     grant_type: [type: :string, default: "refresh_token"]
   }
   def refresh_token(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @refresh_token_schema),
-         {:ok, client} <- Client.new([{:endpoint, @endpoint} | opts]) do
-      data = Map.put(data, :app_secret, get_app_secret(opts))
-      Client.post(client, "/api/token/refreshToken", nil, query: data)
+         {:ok, client} <- Client.new(@options ++ opts) do
+      Client.post(client, "/api/token/refreshToken", data)
     end
-  end
-
-  # extract app_secret from config or options
-  defp get_app_secret(opts) do
-    TiktokShop.Support.Helpers.get_config()
-    |> Map.get(:credential)
-    |> Map.merge(opts[:credential] || %{})
-    |> Map.get(:app_secret)
   end
 end

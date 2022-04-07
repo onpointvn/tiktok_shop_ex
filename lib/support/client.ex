@@ -13,7 +13,6 @@ defmodule TiktokShop.Client do
 
   Your custom reponse handler module must implement `handle_response/1`
   """
-  require Logger
 
   @default_endpoint "https://open-api.tiktokglobalshop.com"
   @doc """
@@ -37,26 +36,34 @@ defmodule TiktokShop.Client do
 
 
   - `endpoint [string]`: custom endpoint
+
+  - `skip_signing [boolean]`: Skip signing the data before sending a request
   """
+
   def new(opts \\ []) do
-    credential_schema = %{
-      app_key: [type: :string, required: true],
-      app_secret: [type: :string, required: true],
-      access_token: :string,
-      shop_id: :string
-    }
-
     config = TiktokShop.Support.Helpers.get_config()
-    credential = Map.merge(config.credential, opts[:credential] || %{})
 
-    with {:ok, data} <- Contrak.validate(credential, credential_schema) do
+    proxy_adapter =
+      if config.proxy do
+        [proxy: config.proxy]
+      else
+        nil
+      end
+
+    credential = Map.merge(config.credential, opts[:credential] || %{})
+    skip_signing = opts[:skip_signing] || false
+
+    with {:ok, credential} <- validate_credential(credential, skip_signing) do
+      options =
+        [
+          adapter: proxy_adapter,
+          credential: credential
+        ]
+        |> TiktokShop.Support.Helpers.clean_nil()
+
       middlewares = [
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
-        {Tesla.Middleware.Opts,
-         [
-           adapter: [proxy: config.proxy],
-           credential: Map.merge(credential, data)
-         ]},
+        {Tesla.Middleware.Opts, options},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
         Tesla.Middleware.JSON
@@ -73,6 +80,18 @@ defmodule TiktokShop.Client do
       {:ok, Tesla.client(middlewares ++ config.middlewares)}
     end
   end
+
+  @credential_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
+    access_token: :string,
+    shop_id: :string
+  }
+  defp validate_credential(credential, false) do
+    Contrak.validate(credential, @credential_schema)
+  end
+
+  defp validate_credential(_, _), do: {:ok, nil}
 
   @doc """
   Perform a GET request
