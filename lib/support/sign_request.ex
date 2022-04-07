@@ -8,6 +8,8 @@ defmodule TiktokShop.Support.SignRequest do
 
   @impl Tesla.Middleware
   def call(env, next, _) do
+    IO.inspect(env.opts)
+
     if env.opts[:skip_signing] do
       Tesla.run(env, next)
     else
