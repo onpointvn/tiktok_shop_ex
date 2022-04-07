@@ -344,4 +344,25 @@ defmodule TiktokShop.Product do
       Client.put(client, "/api/products", payload)
     end
   end
+
+  @doc """
+  Update price
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#PbSbrY
+  """
+  @update_price_schema %{
+    product_id: [type: :string, required: true],
+    skus: [
+      type:
+        {:array,
+         %{id: [type: :string, required: true], original_price: [type: :string, required: true]}},
+      required: true
+    ]
+  }
+  def update_price(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @update_price_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.put(client, "/api/products/prices", data)
+    end
+  end
 end
