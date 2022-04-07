@@ -56,7 +56,7 @@ defmodule TiktokShop.Client do
         [
           adapter: proxy_adapter,
           credential: credential,
-          skip_signing: opts[:skip_signing] || false
+          skip_signing: skip_signing
         ]
         |> TiktokShop.Support.Helpers.clean_nil()
 
