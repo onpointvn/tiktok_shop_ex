@@ -6,7 +6,7 @@ defmodule TiktokShop.Token do
   alias TiktokShop.Client
 
   @options [
-    {:enpoint, "https://auth.tiktok-shops.com"},
+    {:endpoint, "https://auth.tiktok-shops.com"},
     {:skip_signing, true}
   ]
 
