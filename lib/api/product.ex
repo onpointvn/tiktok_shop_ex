@@ -10,7 +10,7 @@ defmodule TiktokShop.Product do
   @doc """
   Get product list
 
-  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#dzikk6
 
   `search_status`: 0-all、1-draft、2-pending、3-failed、4-live、5-seller_deactivated、6-platform_deactivated、7-freeze​ (require)
   """
@@ -48,7 +48,7 @@ defmodule TiktokShop.Product do
   end
 
   @doc """
-  DeActive product
+  Deactivate products
 
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#ruq5mh
 
@@ -223,7 +223,8 @@ defmodule TiktokShop.Product do
   @sku_schema %{
     sales_attributes: [
       type: {:array, @sales_attribute_schema},
-      required: true
+      required: true,
+      length: [min: 1]
     ],
     stock_infos:
       {:array,
@@ -242,7 +243,8 @@ defmodule TiktokShop.Product do
     brand_id: :string,
     images: [
       type: {:array, %{id: [type: :string, required: true]}},
-      required: true
+      required: true,
+      length: [min: 1]
     ],
     warranty_period: [type: :integer, in: TiktokShop.WarrantyPeriod.enum()],
     warranty_policy: :string,
@@ -257,7 +259,8 @@ defmodule TiktokShop.Product do
     is_cod_open: [type: :boolean, required: true],
     skus: [
       type: {:array, @sku_schema},
-      required: true
+      required: true,
+      length: [min: 1]
     ]
   }
   def create_product(params, opts \\ []) do
@@ -271,7 +274,7 @@ defmodule TiktokShop.Product do
   @doc """
   Edit product
 
-  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#v9MgMS
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#tpxuuS
   `package_length`: unit is cm .
   `package_width`: unit is cm.
   `package_height`: unit is cm.
@@ -302,7 +305,8 @@ defmodule TiktokShop.Product do
     id: [type: :string, required: true],
     sales_attributes: [
       type: {:array, @sales_attribute_update_product_schema},
-      required: true
+      required: true,
+      length: [min: 1]
     ],
     stock_infos: [
       type:
@@ -323,7 +327,7 @@ defmodule TiktokShop.Product do
     description: [type: :string, required: true],
     category_id: :string,
     brand_id: :string,
-    images: {:array, %{id: [type: :string, required: true]}},
+    images: [type: {:array, %{id: [type: :string, required: true]}}, length: [min: 1]],
     warranty_period: [type: :integer, in: TiktokShop.WarrantyPeriod.enum()],
     warranty_policy: :string,
     package_length: :integer,
@@ -337,7 +341,8 @@ defmodule TiktokShop.Product do
     is_cod_open: [type: :boolean, required: true],
     skus: [
       type: {:array, @sku_update_product_schema},
-      required: true
+      required: true,
+      length: [min: 1]
     ]
   }
   def update_product(params, opts \\ []) do
@@ -351,7 +356,7 @@ defmodule TiktokShop.Product do
   @doc """
   Update price
 
-  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#PbSbrY
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#kgpaMt
   """
   @update_price_schema %{
     product_id: [type: :string, required: true],
@@ -373,12 +378,12 @@ defmodule TiktokShop.Product do
   @doc """
   Update stock
 
-  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#lf3UTU
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#gZIAHz
   """
 
   @stock_info_schema %{
     warehouse_id: [type: :string, required: true],
-    available_stock: [type: :integer, required: true]
+    available_stock: [type: :integer, required: true, number: [min: 1, max: 99999]]
   }
   @update_stock_schema %{
     product_id: [type: :string, required: true],
@@ -390,7 +395,7 @@ defmodule TiktokShop.Product do
            stock_infos: [
              type: {:array, @stock_info_schema},
              required: true,
-             length: [min: 1, max: 99999]
+             length: [min: 1]
            ]
          }},
       required: true,
@@ -424,7 +429,7 @@ defmodule TiktokShop.Product do
   @doc """
   Recover product
 
-  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#6mCyXV
 
   `product_ids` array products need to recover from list the product deleted
   """
