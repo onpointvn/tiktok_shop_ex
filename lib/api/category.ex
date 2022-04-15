@@ -6,11 +6,11 @@ defmodule TiktokShop.Category do
   alias TiktokShop.Client
 
   @doc """
-  Get category tree from tiktok
+  Get category from tiktok
 
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#jIY8hJ
   """
-  def get_category_tree(opts \\ []) do
+  def get_category(opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
       Client.get(client, "/products/categories")
     end

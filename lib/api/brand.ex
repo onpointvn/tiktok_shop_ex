@@ -10,7 +10,7 @@ defmodule TiktokShop.Brand do
 
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#IPng1X
   """
-  def get_category_tree(opts \\ []) do
+  def get_brand(opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
       Client.get(client, "/products/brands")
     end
