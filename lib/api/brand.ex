@@ -12,7 +12,7 @@ defmodule TiktokShop.Brand do
   """
   def get_brand(opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
-      Client.get(client, "/products/brands")
+      Client.get(client, "/api/products/brands")
     end
   end
 end

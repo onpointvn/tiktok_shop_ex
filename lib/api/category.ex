@@ -12,7 +12,7 @@ defmodule TiktokShop.Category do
   """
   def get_category(opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
-      Client.get(client, "/products/categories")
+      Client.get(client, "/api/products/categories")
     end
   end
 
@@ -23,7 +23,7 @@ defmodule TiktokShop.Category do
   """
   def get_category_attributes(category_id, opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
-      Client.get(client, "/products/attributes",
+      Client.get(client, "/api/products/attributes",
         query: [category_id: category_id]
       )
     end
@@ -36,7 +36,7 @@ defmodule TiktokShop.Category do
   """
   def get_category_rules(category_id, opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
-      Client.get(client, "/products/categories/rules",
+      Client.get(client, "/api/products/categories/rules",
         query: [category_id: category_id]
       )
     end
