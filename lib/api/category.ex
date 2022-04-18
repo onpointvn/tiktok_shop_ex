@@ -34,7 +34,7 @@ defmodule TiktokShop.Category do
 
   Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#Vo9x7O
   """
-  def get_category_attributes(category_id, opts \\ []) do
+  def get_category_rules(category_id, opts \\ []) do
     with {:ok, client} <- Client.new(opts) do
       Client.get(client, "/products/categories/rules",
         query: [category_id: category_id]
