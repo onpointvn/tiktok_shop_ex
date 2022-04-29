@@ -8,6 +8,8 @@ defmodule TiktokShop.ProductsStatus do
   def platform_deactivated, do: 6
   def freeze, do: 7
 
+  def deleted, do: 8
+
   def enum do
     [
       all(),
@@ -17,7 +19,8 @@ defmodule TiktokShop.ProductsStatus do
       live(),
       seller_deactivate(),
       platform_deactivated(),
-      freeze()
+      freeze(),
+      deleted()
     ]
   end
 end
