@@ -383,7 +383,7 @@ defmodule TiktokShop.Product do
 
   @stock_info_schema %{
     warehouse_id: [type: :string, required: true],
-    available_stock: [type: :integer, required: true, number: [min: 1, max: 99999]]
+    available_stock: [type: :integer, required: true, number: [min: 0, max: 99999]]
   }
   @update_stock_schema %{
     product_id: [type: :string, required: true],
