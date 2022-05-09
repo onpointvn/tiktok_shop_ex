@@ -302,7 +302,7 @@ defmodule TiktokShop.Product do
   }
 
   @sku_update_product_schema %{
-    id: [type: :string, required: true],
+    id: [type: :string],
     sales_attributes: [
       type: {:array, @sales_attribute_update_product_schema},
       required: true,

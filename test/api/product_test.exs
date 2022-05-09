@@ -5750,66 +5750,6 @@ defmodule TiktokShopTest.Api.ProductTest do
                })
     end
 
-    test "miss param skus->id" do
-      assert {:error, %{skus: [%{id: ["is required"]}]}} =
-               Product.update_product(%{
-                 product_id: "1729424254457776926",
-                 product_name: "Onpoint product test",
-                 description:
-                   "<p>This is description test for action create a new product in the store Onpoint</p>",
-                 category_id: "602097",
-                 brand_id: "2222222",
-                 images: [%{id: "tos-maliva-i-o3syd03w52-us/3f207be626e94581beb4749f154f8534"}],
-                 warranty_period: 1,
-                 warranty_policy: "Test policy for version trial 1 week",
-                 package_length: 10,
-                 package_width: 10,
-                 package_height: 10,
-                 package_weight: "10.000",
-                 product_certifications: [
-                   %{
-                     id: "1111111",
-                     files: [
-                       %{
-                         id: "dfgsdfgsdfgsdfg",
-                         name: "aaaa.pdf",
-                         type: "PDF"
-                       }
-                     ],
-                     images: [
-                       %{id: "sdafasdfasdfasdfsd"}
-                     ]
-                   }
-                 ],
-                 is_cod_open: true,
-                 skus: [
-                   %{
-                     sales_attributes: [
-                       %{
-                         attribute_id: "100000",
-                         custom_value: "yellow",
-                         sku_img: %{
-                           id: "tos-maliva-i-o3syd03w52-us/08816f1b00bf4fd9980aa0cd441cbe5f"
-                         }
-                       },
-                       %{
-                         attribute_id: "100089",
-                         custom_value: "small"
-                       }
-                     ],
-                     stock_infos: [
-                       %{
-                         warehouse_id: "7068201260272453382",
-                         available_stock: 200
-                       }
-                     ],
-                     seller_sku: "test3",
-                     original_price: "100"
-                   }
-                 ]
-               })
-    end
-
     test "param skus->id is not a string" do
       assert {:error, %{skus: [%{id: ["is not a string"]}]}} =
                Product.update_product(%{
