@@ -236,6 +236,16 @@ defmodule TiktokShop.Product do
     original_price: [type: :string, required: true]
   }
 
+  @product_attribute_schema %{
+    attribute_id: [type: :string, required: true],
+    stock_infos:
+      {:array,
+      %{
+        value_id: [type: :string],
+        value_name: [type: :integer, required: true]
+      }}
+  }
+
   @create_product_schema %{
     product_name: [type: :string, required: true],
     description: [type: :string, required: true],
@@ -255,6 +265,7 @@ defmodule TiktokShop.Product do
     size_chart: %{
       img_id: [type: :string, required: true]
     },
+    product_attributes: {:array, @product_attribute_schema},
     product_certifications: {:array, @product_certification_schema},
     is_cod_open: [type: :boolean, required: true],
     skus: [
@@ -321,6 +332,16 @@ defmodule TiktokShop.Product do
     original_price: [type: :string, required: true]
   }
 
+  @product_attribute_update_product_schema %{
+    attribute_id: [type: :string, required: true],
+    stock_infos:
+      {:array,
+      %{
+        value_id: [type: :string],
+        value_name: [type: :integer, required: true]
+      }}
+  }
+
   @update_product_schema %{
     product_id: [type: :string, required: true],
     product_name: [type: :string, required: true],
@@ -339,6 +360,7 @@ defmodule TiktokShop.Product do
     },
     product_certifications: {:array, @product_certification_update_product_schema},
     is_cod_open: [type: :boolean, required: true],
+    product_attributes: {:array, @product_attribute_update_product_schema},
     skus: [
       type: {:array, @sku_update_product_schema},
       required: true,
