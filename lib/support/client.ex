@@ -7,11 +7,12 @@ defmodule TiktokShop.Client do
             proxy: "http://127.0.0.1:9090",
             app_key: "",
             app_secret: "",
-            response_handler: MyModule
+            timeout: 10_000,
+            response_handler: MyModule,
+            middlewares: [] # custom middlewares
 
   Your custom reponse handler module must implement `handle_response/1`
   """
-  require Logger
 
   @default_endpoint "https://open-api.tiktokglobalshop.com"
   @doc """
@@ -27,50 +28,70 @@ defmodule TiktokShop.Client do
   **Options**
   - `credential [map]`: app credential for request.
     Credential map follow schema belows
-    
+
     app_key: [type: :string, required: true],
     app_secret: [type: :string, required: true],
     access_token: :string,
     shop_id: :string
-    
+
 
   - `endpoint [string]`: custom endpoint
+
+  - `skip_signing [boolean]`: Skip signing the data before sending a request
   """
+
   def new(opts \\ []) do
-    credential_schema = %{
-      app_key: [type: :string, required: true],
-      app_secret: [type: :string, required: true],
-      access_token: :string,
-      shop_id: :string
-    }
-
     config = TiktokShop.Support.Helpers.get_config()
-    credential = Map.merge(config.credential, opts[:credential] || %{})
 
-    with {:ok, data} <- Contrak.validate(credential, credential_schema) do
+    proxy_adapter =
+      if config.proxy do
+        [proxy: config.proxy]
+      else
+        nil
+      end
+
+    credential = Map.merge(config.credential, opts[:credential] || %{})
+    skip_signing = opts[:skip_signing] || false
+
+    with {:ok, credential} <- validate_credential(credential, skip_signing) do
+      options =
+        [
+          adapter: proxy_adapter,
+          credential: credential
+        ]
+        |> TiktokShop.Support.Helpers.clean_nil()
+
       middlewares = [
-        {Tesla.Middleware.Timeout, timeout: config.timeout},
         {Tesla.Middleware.BaseUrl, opts[:endpoint] || @default_endpoint},
-        {Tesla.Middleware.Opts,
-         [
-           adapter: [proxy: config.proxy],
-           credential: Map.merge(credential, data)
-         ]},
+        {Tesla.Middleware.Opts, options},
         TiktokShop.Support.SignRequest,
         TiktokShop.Support.SaveRequestBody,
-        Tesla.Middleware.JSON,
-        Tesla.Middleware.Logger
+        Tesla.Middleware.JSON
       ]
 
-      client =
-        Tesla.client(
-          middlewares,
-          {Tesla.Adapter.Hackney, recv_timeout: config.timeout}
-        )
+      # if config setting timeout, otherwise use default settings
+      middlewares =
+        if config.timeout do
+          [{Tesla.Middleware.Timeout, timeout: config.timeout} | middlewares]
+        else
+          middlewares
+        end
 
-      {:ok, client}
+      {:ok, Tesla.client(middlewares ++ config.middlewares)}
     end
   end
+
+  @credential_schema %{
+    app_key: [type: :string, required: true],
+    app_secret: [type: :string, required: true],
+    access_token: :string,
+    shop_id: :string
+  }
+  defp validate_credential(credential, false) do
+    Contrak.validate(credential, @credential_schema)
+  end
+
+  defp validate_credential(_, _), do: {:ok, nil}
 
   @doc """
   Perform a GET request
@@ -103,6 +124,37 @@ defmodule TiktokShop.Client do
     |> process()
   end
 
+  @doc """
+  Perform a POST request.
+
+      post("/users", %{name: "Jon"})
+      post("/users", %{name: "Jon"}, query: [scope: "admin"])
+      post(client, "/users", %{name: "Jon"})
+      post(client, "/users", %{name: "Jon"}, query: [scope: "admin"])
+  """
+  @spec put(Tesla.Client.t(), String.t(), map(), keyword()) :: {:ok, any()} | {:error, any()}
+  def put(client, path, body, opts \\ []) do
+    client
+    |> Tesla.put(path, body, [{:opts, [api_name: path]} | opts])
+    |> process()
+  end
+
+  @doc """
+  Perform a DELETE request
+
+      delete("/users")
+      delete("/users", query: [scope: "admin"])
+      delete(client, "/users")
+      delete(client, "/users", query: [scope: "admin"])
+      delete(client, "/users", body: %{name: "Jon"})
+  """
+  @spec delete(Tesla.Client.t(), String.t(), keyword()) :: {:ok, any()} | {:error, any()}
+  def delete(client, path, opts \\ []) do
+    client
+    |> Tesla.delete(path, [{:opts, [api_name: path]} | opts])
+    |> process()
+  end
+
   defp process(response) do
     module =
       Application.get_env(:tiktok_shop, :config, [])
@@ -126,8 +178,6 @@ defmodule TiktokShop.Client do
         end
 
       {_, _result} ->
-        Logger.info("TiktokShop connection error: #{inspect(response)}")
-
         {:error, %{type: :system_error, response: response}}
     end
   end

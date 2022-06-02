@@ -8,12 +8,14 @@ defmodule TiktokShop.Support.SignRequest do
 
   @impl Tesla.Middleware
   def call(env, next, _) do
-    credential = env.opts[:credential]
-    env = prepare_params(env, credential)
-    Tesla.run(env, next)
+    env
+    |> prepare_params(env.opts[:credential])
+    |> Tesla.run(next)
   end
 
   # other request
+  defp prepare_params(env, nil), do: env
+
   defp prepare_params(env, credential) do
     common_params =
       Map.new(env.query)
@@ -36,6 +38,7 @@ defmodule TiktokShop.Support.SignRequest do
     params =
       Map.merge(params, common_params)
       |> Helpers.clean_nil()
+      |> Map.delete(:access_token)
 
     signature = Helpers.sign(params, env.opts[:api_name], credential.app_secret)
 

@@ -1,32 +1,467 @@
 defmodule TiktokShop.Product do
   @moduledoc """
-  Product api
+  Product API
   """
 
   alias TiktokShop.Client
 
+  alias TiktokShop.Support.Helpers
+
   @doc """
   Get product list
 
-  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#dzikk6
 
-  `search_status`: 0-all、1-draft、2-pending、3-failed、4-live、5-seller_deactivat、6-platform_deactivated、7-freeze​
+  `search_status`: 0-all、1-draft、2-pending、3-failed、4-live、5-seller_deactivated、6-platform_deactivated、7-freeze​ (require)
   """
   @get_product_list_schema %{
-    search_status: [type: :integer, in: 0..7],
+    search_status: [type: :integer, in: TiktokShop.ProductsStatus.enum()],
     seller_sku_list: [type: {:array, :string}],
-    page_size: [type: :integer, required: true, number: [min: 0, max: 100]],
-    page_number: [type: :integer, number: [min: 1]],
-    # timestamp
-    update_time_from: :integer,
-    update_time_to: :integer,
-    create_time_from: :integer,
-    create_time_to: :integer
+    page_size: [type: :integer, required: true, number: [min: 1, max: 100]],
+    page_number: [type: :integer, required: true, number: [min: 1]],
+    update_time_from: [type: :integer, number: [min: 0]],
+    update_time_to: [type: :integer, number: [min: 0]],
+    create_time_from: [type: :integer, number: [min: 0]],
+    create_time_to: [type: :integer, number: [min: 0]]
   }
   def get_product_list(params, opts \\ []) do
     with {:ok, data} <- Contrak.validate(params, @get_product_list_schema),
          {:ok, client} <- Client.new(opts) do
-      Client.post(client, "/api/products/search", nil, query: data)
+      payload = Helpers.clean_nil(data)
+      Client.post(client, "/api/products/search", payload)
+    end
+  end
+
+  @doc """
+  Get product detail
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#hsy3Mb
+  """
+  @get_product_detail_schema %{
+    product_id: [type: :string, required: true]
+  }
+  def get_product_detail(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @get_product_detail_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/products/details", query: data)
+    end
+  end
+
+  @doc """
+  Deactivate products
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#ruq5mh
+
+  `product_ids` array products need to deactive
+  """
+  @deactivate_products_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def deactivate_products(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @deactivate_products_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/inactivated_products", data)
+    end
+  end
+
+  @doc """
+  Delete product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#MeZAY6
+
+  `product_ids` array products need to deactive
+  """
+  @delete_products_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def delete_products(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @delete_products_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.delete(client, "/api/products", body: data)
+    end
+  end
+
+  @doc """
+  Get all product category
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#jIY8hJ
+
+  """
+  def get_categories(opts \\ []) do
+    with {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/products/categories")
+    end
+  end
+
+  @doc """
+  Get attribute by category
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#WBz4V0
+  """
+  @get_attributes_schema %{
+    category_id: [type: :string, required: true]
+  }
+  @spec get_attributes(map(), keyword()) :: {:ok, map()} | {:error, any()}
+  def get_attributes(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @get_attributes_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/products/attributes", query: data)
+    end
+  end
+
+  @doc """
+  Get category rules by category_id
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#Vo9x7O
+  """
+  @get_category_rules_schema %{
+    category_id: [
+      type: :string,
+      required: true
+    ]
+  }
+  @spec get_category_rules(map(), keyword()) :: {:ok, map()} | {:error, any()}
+  def get_category_rules(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @get_category_rules_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/products/categories/rules", query: data)
+    end
+  end
+
+  @doc """
+  Get all brands
+
+  References: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#IPng1X
+  """
+  def get_brands(opts \\ []) do
+    with {:ok, client} <- Client.new(opts) do
+      Client.get(client, "/api/products/brands")
+    end
+  end
+
+  @doc """
+  Upload image product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#dO1LU7
+
+  `img_data`: just support image type: JPG, JPEG, PNG.
+    Image picture pixels at least 600*600 and at most 20000*20000.
+    Max size of original image: 5MB (recommand: image size have to >100KB, width/height must be >1000pix).
+    The picture file is a string generated by base64 encoding.
+
+  `img_scene`: Scenes using pictures:​
+   - 1:"PRODUCT_IMAGE" The ratio of horizontal and vertical is recommended to be 1:1​
+   - 2:"DESCRIPTION_IMAGE"​
+   - 3:"ATTRIBUTE_IMAGE " The ratio of horizontal and vertical is recommended to be 1:1​
+   - 4:"CERTIFICATION_IMAGE"​
+   - 5:"SIZE_CHART_IMAGE"
+  """
+  @upload_image_schema %{
+    img_data: [type: :string, required: true],
+    img_scene: [type: :integer, required: true, number: [min: 1, max: 5]]
+  }
+  def upload_images(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @upload_image_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/upload_imgs", data)
+    end
+  end
+
+  @doc """
+  Update file
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#gKjcnl
+
+  `file_data`: Import the file in pdf format.
+    The file is a string generated by base64 encoding.
+    The original file size must not exceed 10M.
+
+  `file_name`: string have format <file_name>.pdf
+  """
+  @update_files_schema %{
+    file_data: [type: :string, required: true],
+    file_name: [type: :string, required: true]
+  }
+  def upload_files(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @update_files_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/upload_files", data)
+    end
+  end
+
+  @doc """
+  Creat new product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#ahrYRK
+
+  `package_length`: unit is cm .
+  `package_width`: unit is cm.
+  `package_height`: unit is cm.
+  `package_weight`: unit is kg. Up to two digits after the decimal point
+  """
+  @product_certification_schema %{
+    id: [type: :string, required: true],
+    images: {:array, %{id: [type: :string, required: true]}},
+    files:
+      {:array,
+       %{
+         id: [type: :string, required: true],
+         name: [type: :string, required: true],
+         type: [type: :string, required: true]
+       }}
+  }
+
+  @sales_attribute_schema %{
+    attribute_id: [type: :string, required: true],
+    value_id: :string,
+    custom_value: :string,
+    sku_img: %{
+      id: [type: :string, required: true]
+    }
+  }
+
+  @sku_schema %{
+    sales_attributes: [
+      type: {:array, @sales_attribute_schema},
+      required: true,
+      length: [min: 1]
+    ],
+    stock_infos:
+      {:array,
+       %{
+         warehouse_id: [type: :string, required: true],
+         available_stock: [type: :integer, required: true]
+       }},
+    seller_sku: :string,
+    original_price: [type: :string, required: true]
+  }
+
+  @product_attribute_schema %{
+    attribute_id: [type: :string, required: true],
+    stock_infos:
+      {:array,
+      %{
+        value_id: [type: :string],
+        value_name: [type: :integer, required: true]
+      }}
+  }
+
+  @create_product_schema %{
+    product_name: [type: :string, required: true],
+    description: [type: :string, required: true],
+    category_id: [type: :string, required: true],
+    brand_id: :string,
+    images: [
+      type: {:array, %{id: [type: :string, required: true]}},
+      required: true,
+      length: [min: 1]
+    ],
+    warranty_period: [type: :integer, in: TiktokShop.WarrantyPeriod.enum()],
+    warranty_policy: :string,
+    package_length: [type: :integer, number: [min: 1, max: 60]],
+    package_width: [type: :integer, number: [min: 1, max: 40]],
+    package_height: [type: :integer, number: [min: 1, max: 35]],
+    package_weight: [type: :string, required: true],
+    size_chart: %{
+      img_id: [type: :string, required: true]
+    },
+    product_attributes: {:array, @product_attribute_schema},
+    product_certifications: {:array, @product_certification_schema},
+    is_cod_open: [type: :boolean, required: true],
+    skus: [
+      type: {:array, @sku_schema},
+      required: true,
+      length: [min: 1]
+    ]
+  }
+  def create_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @create_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      payload = TiktokShop.Support.Helpers.clean_nil(data)
+      Client.post(client, "/api/products", payload)
+    end
+  end
+
+  @doc """
+  Edit product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#tpxuuS
+  `package_length`: unit is cm .
+  `package_width`: unit is cm.
+  `package_height`: unit is cm.
+  `package_weight`: unit is kg. Up to two digits after the decimal point
+  """
+  @product_certification_update_product_schema %{
+    id: [type: :string, required: true],
+    images: {:array, %{id: [type: :string, required: true]}},
+    files:
+      {:array,
+       %{
+         id: [type: :string, required: true],
+         name: [type: :string, required: true],
+         type: [type: :string, required: true]
+       }}
+  }
+
+  @sales_attribute_update_product_schema %{
+    attribute_id: [type: :string, required: true],
+    value_id: :string,
+    custom_value: :string,
+    sku_img: %{
+      id: [type: :string, required: true]
+    }
+  }
+
+  @sku_update_product_schema %{
+    id: [type: :string],
+    sales_attributes: [
+      type: {:array, @sales_attribute_update_product_schema},
+      required: true,
+      length: [min: 1]
+    ],
+    stock_infos: [
+      type:
+        {:array,
+         %{
+           warehouse_id: [type: :string, required: true],
+           available_stock: [type: :integer, required: true]
+         }},
+      required: true
+    ],
+    seller_sku: :string,
+    original_price: [type: :string, required: true]
+  }
+
+  @product_attribute_update_product_schema %{
+    attribute_id: [type: :string, required: true],
+    stock_infos:
+      {:array,
+      %{
+        value_id: [type: :string],
+        value_name: [type: :integer, required: true]
+      }}
+  }
+
+  @update_product_schema %{
+    product_id: [type: :string, required: true],
+    product_name: [type: :string, required: true],
+    description: [type: :string, required: true],
+    category_id: :string,
+    brand_id: :string,
+    images: [type: {:array, %{id: [type: :string, required: true]}}, length: [min: 1]],
+    warranty_period: [type: :integer, in: TiktokShop.WarrantyPeriod.enum()],
+    warranty_policy: :string,
+    package_length: :integer,
+    package_width: :integer,
+    package_height: :integer,
+    package_weight: [type: :string, required: true],
+    size_chart: %{
+      img_id: [type: :string, required: true]
+    },
+    product_certifications: {:array, @product_certification_update_product_schema},
+    is_cod_open: [type: :boolean, required: true],
+    product_attributes: {:array, @product_attribute_update_product_schema},
+    skus: [
+      type: {:array, @sku_update_product_schema},
+      required: true,
+      length: [min: 1]
+    ]
+  }
+  def update_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @update_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      payload = TiktokShop.Support.Helpers.clean_nil(data)
+      Client.put(client, "/api/products", payload)
+    end
+  end
+
+  @doc """
+  Update price
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#kgpaMt
+  """
+  @update_price_schema %{
+    product_id: [type: :string, required: true],
+    skus: [
+      type:
+        {:array,
+         %{id: [type: :string, required: true], original_price: [type: :string, required: true]}},
+      required: true,
+      length: [min: 1]
+    ]
+  }
+  def update_price(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @update_price_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.put(client, "/api/products/prices", data)
+    end
+  end
+
+  @doc """
+  Update stock
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#gZIAHz
+  """
+
+  @stock_info_schema %{
+    warehouse_id: :string,
+    available_stock: [type: :integer, required: true, number: [min: 0, max: 99999]]
+  }
+  @update_stock_schema %{
+    product_id: [type: :string, required: true],
+    skus: [
+      type:
+        {:array,
+         %{
+           id: [type: :string, required: true],
+           stock_infos: [
+             type: {:array, @stock_info_schema},
+             required: true,
+             length: [min: 1]
+           ]
+         }},
+      required: true,
+      length: [min: 1]
+    ]
+  }
+  def update_stock(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @update_stock_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.put(client, "/api/products/stocks", data)
+    end
+  end
+
+  @doc """
+  Active product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#0gpofi
+
+  `product_ids` array products need to active
+  """
+  @active_product_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def active_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @active_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/activate", data)
+    end
+  end
+
+  @doc """
+  Recover product
+
+  Reference: https://bytedance.feishu.cn/docs/doccnDyz5Bbk26iOdejbBRBlLrb#6mCyXV
+
+  `product_ids` array products need to recover from list the product deleted
+  """
+  @recover_product_schema %{
+    product_ids: [type: {:array, :string}, required: true, length: [min: 1]]
+  }
+  def recover_product(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @recover_product_schema),
+         {:ok, client} <- Client.new(opts) do
+      Client.post(client, "/api/products/recover", data)
     end
   end
 end
