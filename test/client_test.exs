@@ -1,5 +1,6 @@
 defmodule TiktokShopTest.ClientTest do
   use TiktokShopTest.DataCase
+  require Logger
 
   defmodule CustomHandler1 do
     def handle_response(response) do
