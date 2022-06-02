@@ -5,6 +5,7 @@ defmodule TiktokShopTest.Api.ProductTest do
   setup do
     System.put_env("APP_KEY", "123123")
     System.put_env("APP_SECRET", "9751d6598735babe213e1f5bbe9864cd341b1231")
+    Application.put_env(:tiktok_shop, :timeout, nil)
     :ok
   end
 
@@ -35,7 +36,7 @@ defmodule TiktokShopTest.Api.ProductTest do
 
     test "search status not in list" do
       assert {:error, %{search_status: ["not be in the inclusion list"]}} =
-               Product.get_product_list(%{page_size: 10, page_number: 1, search_status: 8})
+               Product.get_product_list(%{page_size: 10, page_number: 1, search_status: 9})
     end
 
     test "update time negative" do
@@ -81,7 +82,7 @@ defmodule TiktokShopTest.Api.ProductTest do
     end
 
     test "type param invalid" do
-      assert {:error, %{product_ids: ["is not a string"]}} =
+      assert {:error, %{product_ids: ["is invalid"]}} =
                Product.deactivate_products(%{product_ids: [123]})
     end
   end
@@ -97,7 +98,7 @@ defmodule TiktokShopTest.Api.ProductTest do
     end
 
     test "type param invalid" do
-      assert {:error, %{product_ids: ["is not a string"]}} =
+      assert {:error, %{product_ids: ["is invalid"]}} =
                Product.delete_products(%{product_ids: [123]})
     end
   end
@@ -7041,23 +7042,6 @@ defmodule TiktokShopTest.Api.ProductTest do
                })
     end
 
-    test "miss param skus->stock_infos->warehouse_id" do
-      assert {:error, %{skus: [%{stock_infos: [%{warehouse_id: ["is required"]}]}]}} =
-               Product.update_stock(%{
-                 product_id: "1729424254457776926",
-                 skus: [
-                   %{
-                     id: "1729424254457842462",
-                     stock_infos: [
-                       %{
-                         available_stock: 269
-                       }
-                     ]
-                   }
-                 ]
-               })
-    end
-
     test "type param skus->stock_infos->warehouse_id is not a string" do
       assert {:error, %{skus: [%{stock_infos: [%{warehouse_id: ["is not a string"]}]}]}} =
                Product.update_stock(%{
@@ -7111,11 +7095,11 @@ defmodule TiktokShopTest.Api.ProductTest do
                })
     end
 
-    test "param skus->stock_infos->available_stock < 1" do
+    test "param skus->stock_infos->available_stock < 0" do
       assert {:error,
               %{
                 skus: [
-                  %{stock_infos: [%{available_stock: ["must be greater than or equal to 1"]}]}
+                  %{stock_infos: [%{available_stock: ["must be greater than or equal to 0"]}]}
                 ]
               }} =
                Product.update_stock(%{
@@ -7126,7 +7110,7 @@ defmodule TiktokShopTest.Api.ProductTest do
                      stock_infos: [
                        %{
                          warehouse_id: "7068201260272453382",
-                         available_stock: 0
+                         available_stock: -1
                        }
                      ]
                    }
@@ -7169,7 +7153,7 @@ defmodule TiktokShopTest.Api.ProductTest do
     end
 
     test "type param invalid" do
-      assert {:error, %{product_ids: ["is not a string"]}} =
+      assert {:error, %{product_ids: ["is invalid"]}} =
                Product.active_product(%{product_ids: [123]})
     end
   end
@@ -7185,7 +7169,7 @@ defmodule TiktokShopTest.Api.ProductTest do
     end
 
     test "type param invalid" do
-      assert {:error, %{product_ids: ["is not a string"]}} =
+      assert {:error, %{product_ids: ["is invalid"]}} =
                Product.recover_product(%{product_ids: [123]})
     end
   end
