@@ -11,6 +11,9 @@ defmodule TiktokShop.Fulfillment.PickupType do
 end
 
 defmodule TiktokShop.Fulfillment do
+  alias TiktokShop.Client
+  alias TiktokShop.Support.Helpers
+
   @doc """
   Ship Package
 
