@@ -102,4 +102,27 @@ defmodule TiktokShop.Order do
       Client.post(client, "/api/orders/detail/query", data)
     end
   end
+
+  @doc """
+  Ship order
+
+  Note: this API will be deprecated after 2022-07-31
+
+  Reference: https://bytedance.feishu.cn/wiki/wikcntMLczW460imZUfYqaa1Dng#7OH0ao
+  """
+  @ship_order_schema %{
+    order_id: [type: :string, required: true],
+    self_shipment: %{
+      tracking_number: [type: :string, required: true],
+      shipping_provider_id: [type: :string, required: true]
+    }
+  }
+  @spec ship_order(map(), keyword()) :: {:ok, map()} | {:error, any()}
+  def ship_order(params, opts \\ []) do
+    with {:ok, data} <- Contrak.validate(params, @ship_order_schema),
+         {:ok, client} <- Client.new(opts) do
+      payload = Helpers.clean_nil(data)
+      Client.post(client, "/api/order/rts", payload)
+    end
+  end
 end
