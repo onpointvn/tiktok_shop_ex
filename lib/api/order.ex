@@ -106,6 +106,8 @@ defmodule TiktokShop.Order do
   @doc """
   Ship order
 
+  Note: this API will be deprecated after 2022-07-31
+
   Reference: https://bytedance.feishu.cn/wiki/wikcntMLczW460imZUfYqaa1Dng#7OH0ao
   """
   @ship_order_schema %{
